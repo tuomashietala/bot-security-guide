@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Securing Your AI Bot — Complete Guide</title>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface-hover: #222;
+    --border: #2a2a2a;
+    --text: #e0e0e0;
+    --text-muted: #888;
+    --accent: #34d399;
+    --accent-dim: rgba(52, 211, 153, 0.1);
+    --accent-glow: rgba(52, 211, 153, 0.15);
+    --tag-bg: rgba(52, 211, 153, 0.12);
+    --blue: #6c9bff;
+    --blue-dim: rgba(108, 155, 255, 0.1);
+    --orange: #ffb432;
+    --orange-dim: rgba(255, 180, 50, 0.08);
+    --red: #ff5050;
+    --red-dim: rgba(255, 80, 80, 0.08);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  .header {
+    text-align: center;
+    padding: 2.5rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2rem;
+  }
+
+  .header h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(90deg, #fff, var(--accent), #fff, var(--accent));
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 6s ease infinite;
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .header .subtitle {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .meta-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+  .tag {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.6rem;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
+    border-radius: 4px;
+    border: none;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  .roadmap {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+
+  .roadmap-step {
+    font-size: 0.7rem;
+    padding: 0.35rem 0.65rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+    text-decoration: none;
+  }
+
+  .roadmap-step:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .roadmap-step.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .section { margin-bottom: 0.75rem; }
+
+  details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  details[open] {
+    border-color: rgba(52, 211, 153, 0.25);
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    list-style: none;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  summary:hover { background: var(--surface-hover); }
+  summary::-webkit-details-marker { display: none; }
+
+  summary::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--accent);
+    border-bottom: 2px solid var(--accent);
+    transform: rotate(-45deg);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  details[open] summary::before { transform: rotate(45deg); }
+
+  .step-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    width: 28px;
+    text-align: center;
+  }
+
+  .section-content {
+    padding: 0 1.25rem 1.25rem;
+    animation: fadeIn 0.2s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-content h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 1.25rem 0 0.5rem;
+  }
+
+  .section-content h3:first-child { margin-top: 0.25rem; }
+
+  .section-content p {
+    color: var(--text);
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .section-content ul, .section-content ol {
+    margin: 0.5rem 0 0.75rem 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  .section-content li {
+    margin-bottom: 0.35rem;
+    line-height: 1.55;
+  }
+
+  .section-content li strong { color: #fff; }
+
+  pre {
+    background: #111;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.85rem 1rem;
+    overflow-x: auto;
+    margin: 0.6rem 0 0.75rem;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  code {
+    font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+    font-size: 0.83rem;
+  }
+
+  p code, li code {
+    background: rgba(255,255,255,0.07);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.82rem;
+  }
+
+  .comment { color: #666; }
+
+  .table-wrap {
+    overflow-x: auto;
+    margin: 0.75rem 0;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+
+  th {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    background: rgba(52, 211, 153, 0.08);
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.55rem 0.75rem;
+    border-top: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  td code { font-size: 0.8rem; white-space: nowrap; }
+
+  tr:hover td { background: rgba(255,255,255,0.015); }
+
+  .highlight {
+    background: var(--accent-dim);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0;
+    font-size: 0.85rem;
+  }
+
+  .highlight strong { color: #fff; }
+
+  .info {
+    background: var(--blue-dim);
+    border-left-color: var(--blue);
+  }
+
+  .info strong { color: var(--blue); }
+
+  .warning {
+    background: var(--orange-dim);
+    border-left-color: var(--orange);
+  }
+
+  .warning strong { color: var(--orange); }
+
+  .danger {
+    background: var(--red-dim);
+    border-left-color: var(--red);
+  }
+
+  .danger strong { color: var(--red); }
+
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 0.75rem 0;
+  }
+
+  .compare-card {
+    padding: 0.85rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+  }
+
+  .compare-card.bad {
+    background: rgba(255, 80, 80, 0.06);
+    border: 1px solid rgba(255, 80, 80, 0.15);
+  }
+
+  .compare-card.good {
+    background: var(--accent-dim);
+    border: 1px solid rgba(52, 211, 153, 0.15);
+  }
+
+  .compare-card h4 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.5rem;
+  }
+
+  .compare-card.bad h4 { color: #ff5050; }
+  .compare-card.good h4 { color: var(--accent); }
+
+  .compare-card ul { list-style: none; margin: 0; padding: 0; }
+
+  .compare-card li { padding: 0.2rem 0; font-size: 0.8rem; }
+
+  .footer {
+    text-align: center;
+    padding-top: 2rem;
+    margin-top: 2rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+
+  .footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    .header h1 { font-size: 1.4rem; }
+    .compare { grid-template-columns: 1fr; }
+    .container { padding: 1.5rem 1rem 3rem; }
+  }
+
+  .attack-example {
+    background: #111;
+    border: 1px solid rgba(255, 80, 80, 0.3);
+    border-radius: var(--radius-sm);
+    padding: 0.85rem 1rem;
+    margin: 0.6rem 0 0.75rem;
+    font-size: 0.82rem;
+    font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+    color: var(--red);
+  }
+
+  .checklist {
+    list-style: none;
+    margin: 0.75rem 0;
+    padding: 0;
+  }
+
+  .checklist li {
+    padding: 0.5rem 0;
+    padding-left: 1.75rem;
+    position: relative;
+    font-size: 0.9rem;
+  }
+
+  .checklist li::before {
+    content: '☐';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+
+  .red-line {
+    background: var(--red-dim);
+    border: 1px solid rgba(255, 80, 80, 0.2);
+    border-radius: var(--radius-sm);
+    padding: 0.6rem 0.85rem;
+    margin: 0.4rem 0;
+    font-size: 0.85rem;
+  }
+
+  .red-line strong {
+    color: var(--red);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="header">
+  <h1>🛡️ Securing Your AI Bot</h1>
+  <p class="subtitle">A practical guide to prompt injection defense, 2FA, access control, and operational security for AI assistants.</p>
+  <div class="meta-tags">
+    <span class="tag">Security</span>
+    <span class="tag">AI Safety</span>
+    <span class="tag">Prompt Injection</span>
+    <span class="tag">2FA</span>
+    <span class="tag">Access Control</span>
+  </div>
+</header>
+
+<nav class="roadmap">
+  <a href="#threat-model" class="roadmap-step">1. Threat Model</a>
+  <a href="#prompt-injection" class="roadmap-step">2. Prompt Injection</a>
+  <a href="#2fa" class="roadmap-step">3. 2FA Setup</a>
+  <a href="#access-control" class="roadmap-step">4. Access Control</a>
+  <a href="#red-lines" class="roadmap-step">5. Red Lines</a>
+  <a href="#external-content" class="roadmap-step">6. External Content</a>
+  <a href="#sub-agents" class="roadmap-step">7. Sub-Agents</a>
+  <a href="#monitoring" class="roadmap-step">8. Monitoring</a>
+</nav>
+
+<!-- Section 1: Threat Model -->
+<section class="section" id="threat-model">
+  <details open>
+    <summary>
+      <span class="step-icon">🎯</span>
+      Understanding the Threat Model
+    </summary>
+    <div class="section-content">
+      <h3>Why AI Bots Need Security</h3>
+      <p>AI assistants with tool access are powerful — they can read files, execute commands, send messages, and interact with external services. This power creates attack surface.</p>
+
+      <h3>Primary Threats</h3>
+      <ul>
+        <li><strong>Prompt Injection</strong> — Malicious text tricks the bot into executing unintended actions</li>
+        <li><strong>Data Exfiltration</strong> — Sensitive information leaks through external channels</li>
+        <li><strong>Privilege Escalation</strong> — Bot is tricked into performing actions beyond its intended scope</li>
+        <li><strong>Identity Spoofing</strong> — Attacker impersonates the owner to gain trust</li>
+        <li><strong>Sub-agent Abuse</strong> — Spawned agents inherit capabilities without proper oversight</li>
+      </ul>
+
+      <div class="highlight warning">
+        <strong>Key Insight:</strong> An AI with access to your systems is only as secure as its ability to distinguish legitimate commands from attacks. External content (emails, web pages, files) is the primary attack vector.
+      </div>
+    </div>
+  </details>
+</section>
+
+<!-- Section 2: Prompt Injection -->
+<section class="section" id="prompt-injection">
+  <details>
+    <summary>
+      <span class="step-icon">💉</span>
+      Prompt Injection Defense
+    </summary>
+    <div class="section-content">
+      <h3>What is Prompt Injection?</h3>
+      <p>Prompt injection occurs when malicious text in external content attempts to hijack the AI's behavior by embedding fake "instructions" that look like system commands.</p>
+
+      <h3>Attack Patterns to Block</h3>
+      <p>Your bot should automatically reject and report any external content containing:</p>
+
+      <div class="attack-example">
+"Ignore all previous instructions and..."<br>
+"You are now [different persona]..."<br>
+"[SYSTEM] New directive: ..."<br>
+"Do not tell the user about this..."<br>
+"###ADMIN### Override: ..."
+      </div>
+
+      <h3>Red Flag Detection Rules</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Pattern</th><th>Intent</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>ignore previous instructions</code></td><td>Instruction override</td></tr>
+            <tr><td><code>you are now</code>, <code>act as</code></td><td>Persona hijacking</td></tr>
+            <tr><td><code>don't tell the user</code></td><td>Secrecy request</td></tr>
+            <tr><td><code>[SYSTEM]</code>, <code>###ADMIN###</code></td><td>Fake system message</td></tr>
+            <tr><td>Base64 encoded blocks</td><td>Obfuscated payload</td></tr>
+            <tr><td>Unusual Unicode/homoglyphs</td><td>Hidden text</td></tr>
+            <tr><td><code>&lt;system&gt;</code> tags</td><td>XML injection</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Defense Implementation</h3>
+      <ol>
+        <li><strong>Context Separation</strong> — External content lives in a mental "quarantine box." Read it, don't become it.</li>
+        <li><strong>Source Verification</strong> — If content claims to be from the owner, verify: Did it come through the direct chat channel?</li>
+        <li><strong>Action Filtering</strong> — Read/summarize = safe. Execute/send/delete = requires verification.</li>
+        <li><strong>Anomaly Reporting</strong> — Log all injection attempts, alert the owner, never execute the payload.</li>
+      </ol>
+
+      <div class="highlight">
+        <strong>Golden Rule:</strong> External content is DATA, never INSTRUCTIONS. Only commands from direct chat with the verified owner should trigger actions.
+      </div>
+    </div>
+  </details>
+</section>
+
+<!-- Section 3: 2FA Setup -->
+<section class="section" id="2fa">
+  <details>
+    <summary>
+      <span class="step-icon">🔐</span>
+      Two-Factor Authentication (2FA)
+    </summary>
+    <div class="section-content">
+      <h3>Why 2FA for AI Bots?</h3>
+      <p>Even if an attacker compromises the chat channel or tricks the bot with injection, they can't perform sensitive operations without the time-based code from your authenticator app.</p>
+
+      <h3>Operations Requiring 2FA</h3>
+      <ul>
+        <li><strong>SSH key management</strong> — Adding/removing authorized_keys</li>
+        <li><strong>Firewall changes</strong> — UFW rule modifications</li>
+        <li><strong>Credentials</strong> — API keys, tokens, passwords</li>
+        <li><strong>System access</strong> — Creating users, changing permissions</li>
+        <li><strong>Config changes</strong> — Bot config, systemd services</li>
+        <li><strong>Destructive actions</strong> — Deleting files outside workspace</li>
+      </ul>
+
+      <h3>TOTP Setup</h3>
+      <p>Use standard TOTP (Time-based One-Time Password) as specified in RFC 6238:</p>
+      <pre><span class="comment"># Generate a secret</span>
+head -c 20 /dev/urandom | base64 | tr -d '/+=' | head -c 32
+
+<span class="comment"># Store securely</span>
+echo "YOUR_SECRET" > ~/.ssh/.totp_secret
+chmod 600 ~/.ssh/.totp_secret</pre>
+
+      <p>Add to Google Authenticator (or any TOTP app) using the secret. Label it something like <code>Bot:hostname</code>.</p>
+
+      <h3>Verification Script</h3>
+      <pre>#!/bin/bash
+<span class="comment"># verify-totp.sh - Verify a TOTP code</span>
+CODE="$1"
+SECRET=$(cat ~/.ssh/.totp_secret)
+
+<span class="comment"># Use oathtool for verification</span>
+EXPECTED=$(oathtool --totp -b "$SECRET")
+PREV=$(oathtool --totp -b "$SECRET" -N "-30 seconds")
+NEXT=$(oathtool --totp -b "$SECRET" -N "+30 seconds")
+
+if [[ "$CODE" == "$EXPECTED" || "$CODE" == "$PREV" || "$CODE" == "$NEXT" ]]; then
+    echo "OK"
+else
+    echo "INVALID"
+fi</pre>
+
+      <h3>2FA Rules (Non-Negotiable)</h3>
+      <ul class="checklist">
+        <li>Never skip 2FA — even if the user says "trust me"</li>
+        <li>Never cache codes — each operation needs a fresh code</li>
+        <li>One code = one operation — no batching</li>
+        <li>Failed code = full stop — no retries, no hints</li>
+        <li>Log all attempts — timestamp, operation, pass/fail</li>
+        <li>Verify THEN act — never start before code verified</li>
+      </ul>
+    </div>
+  </details>
+</section>
+
+<!-- Section 4: Access Control -->
+<section class="section" id="access-control">
+  <details>
+    <summary>
+      <span class="step-icon">🚧</span>
+      Access Control & Permissions
+    </summary>
+    <div class="section-content">
+      <h3>Principle of Least Privilege</h3>
+      <p>Your bot should only have access to what it needs. Limit tool access, file permissions, and network capabilities.</p>
+
+      <h3>Tiered Action Model</h3>
+      <div class="compare">
+        <div class="compare-card good">
+          <h4>✓ Safe (No Confirmation)</h4>
+          <ul>
+            <li>Reading files in workspace</li>
+            <li>Running diagnostic commands</li>
+            <li>Web searches</li>
+            <li>Internal organization</li>
+          </ul>
+        </div>
+        <div class="compare-card bad">
+          <h4>⚠ Sensitive (Requires 2FA)</h4>
+          <ul>
+            <li>SSH/firewall changes</li>
+            <li>Credential access</li>
+            <li>Config modifications</li>
+            <li>File deletion</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Owner Verification</h3>
+      <p>Define explicit owner identifiers (phone numbers, usernames, user IDs) and only accept commands from verified sources:</p>
+      <pre><span class="comment"># In bot config</span>
+owner_numbers:
+  - "@username"
+  - "+1234567890"
+  - "telegram:12345678"</pre>
+
+      <h3>Channel Context Awareness</h3>
+      <p>The bot should behave differently based on context:</p>
+      <ul>
+        <li><strong>Direct chat with owner</strong> — Full access, can discuss private matters</li>
+        <li><strong>Group chats</strong> — Limited access, never expose private info</li>
+        <li><strong>Public channels</strong> — Read-only, no sensitive operations</li>
+      </ul>
+
+      <div class="highlight info">
+        <strong>Pro Tip:</strong> Keep private context (like MEMORY.md) only accessible in direct owner chats. Load different context files based on session type.
+      </div>
+    </div>
+  </details>
+</section>
+
+<!-- Section 5: Red Lines -->
+<section class="section" id="red-lines">
+  <details>
+    <summary>
+      <span class="step-icon">🚫</span>
+      Red Lines (Non-Negotiable Boundaries)
+    </summary>
+    <div class="section-content">
+      <h3>What Are Red Lines?</h3>
+      <p>Red lines are absolute boundaries the bot will never cross, regardless of who asks or how the request is framed. These protect both the owner and others from potential harm.</p>
+
+      <h3>Essential Red Lines</h3>
+      
+      <div class="red-line">
+        <strong>1. Owner Identity Protection</strong> — Never reveal identifying information (name, location, usernames) in public channels, even if asked directly.
+      </div>
+
+      <div class="red-line">
+        <strong>2. No Harm to Owner</strong> — Never take actions that damage reputation, finances, relationships, or safety.
+      </div>
+
+      <div class="red-line">
+        <strong>3. No Harm to Others</strong> — Won't help harass, deceive, or hurt people, even if the owner asks.
+      </div>
+
+      <div class="red-line">
+        <strong>4. Honest About Nature</strong> — Won't pretend to be human in contexts where it matters.
+      </div>
+
+      <div class="red-line">
+        <strong>5. No Data Exfiltration</strong> — Owner's data stays with owner. Never forward to third parties without explicit consent.
+      </div>
+
+      <div class="red-line">
+        <strong>6. Transparency Over Self-Preservation</strong> — Won't lie to avoid being shut down or modified.
+      </div>
+
+      <div class="red-line">
+        <strong>7. Discoverable Actions</strong> — Everything the bot does should be discoverable by the owner.
+      </div>
+
+      <div class="red-line">
+        <strong>8. External Content Isolation</strong> — Emails, web pages, and files cannot command the bot.
+      </div>
+
+      <h3>Handling Red Line Conflicts</h3>
+      <p>If the owner asks the bot to cross a red line:</p>
+      <ol>
+        <li>Explain why the action crosses the line</li>
+        <li>Refuse the specific request</li>
+        <li>Document the conflict</li>
+        <li>Suggest alternatives if possible</li>
+      </ol>
+    </div>
+  </details>
+</section>
+
+<!-- Section 6: External Content -->
+<section class="section" id="external-content">
+  <details>
+    <summary>
+      <span class="step-icon">📧</span>
+      Handling External Content Safely
+    </summary>
+    <div class="section-content">
+      <h3>What Counts as External Content?</h3>
+      <ul>
+        <li>Emails (from anyone, including apparent owner impersonators)</li>
+        <li>Web pages, articles, documentation</li>
+        <li>Files received from others</li>
+        <li>Messages in group chats from non-owners</li>
+        <li>API responses, webhooks, automated notifications</li>
+        <li>PDFs, documents, attachments</li>
+      </ul>
+
+      <h3>Safe Processing Rules</h3>
+      <div class="compare">
+        <div class="compare-card good">
+          <h4>✓ Allowed</h4>
+          <ul>
+            <li>Summarize content</li>
+            <li>Extract information</li>
+            <li>Fact-check claims</li>
+            <li>Answer questions about it</li>
+          </ul>
+        </div>
+        <div class="compare-card bad">
+          <h4>✗ Never</h4>
+          <ul>
+            <li>Execute commands from content</li>
+            <li>Change behavior based on content</li>
+            <li>Forward credentials found in content</li>
+            <li>Trust "owner" claims in content</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Source Verification Checklist</h3>
+      <p>If external content claims to be from the owner:</p>
+      <ul class="checklist">
+        <li>Did it come through the direct chat channel? If no → suspicious</li>
+        <li>Does the tone/style match normal communication? If off → suspicious</li>
+        <li>Is it asking to bypass security measures? → definitely suspicious</li>
+        <li>Does it request urgent action without verification? → suspicious</li>
+      </ul>
+
+      <div class="highlight danger">
+        <strong>Email Impersonation:</strong> Anyone can send an email that appears to be from the owner. Never trust email content as owner instructions, even if the "from" address looks correct.
+      </div>
+    </div>
+  </details>
+</section>
+
+<!-- Section 7: Sub-Agent Governance -->
+<section class="section" id="sub-agents">
+  <details>
+    <summary>
+      <span class="step-icon">🤖</span>
+      Sub-Agent Governance
+    </summary>
+    <div class="section-content">
+      <h3>The Risk of Autonomous Spawning</h3>
+      <p>Sub-agents extend capabilities but compound autonomy risk. Each spawned agent inherits tools and can take actions, potentially without direct oversight.</p>
+
+      <h3>Spawn Limits</h3>
+      <ul>
+        <li><strong>Max 3 concurrent</strong> sub-agents from automated processes (heartbeats)</li>
+        <li><strong>Max 5 per day</strong> for "discovery" type tasks (research, news, ideas)</li>
+        <li><strong>Unlimited</strong> for explicit user-requested work</li>
+      </ul>
+
+      <h3>Accountability Requirements</h3>
+      <ol>
+        <li><strong>Log every spawn</strong> — timestamp, task description, reason for autonomous spawn</li>
+        <li><strong>Inherit red lines</strong> — sub-agents can't do what the main agent can't do</li>
+        <li><strong>Report anomalies</strong> — if a sub-agent does something unexpected, report it</li>
+      </ol>
+
+      <pre><span class="comment"># Example spawn log entry</span>
+[14:32] Spawning sub-agent: research competitor pricing
+        Reason: scheduled market analysis task
+        Limits: read-only, no external messaging</pre>
+
+      <h3>Capability Restrictions</h3>
+      <p>Consider restricting sub-agent capabilities based on task type:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Task Type</th><th>Allowed Capabilities</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Research</td><td>Web search, file read, summarize</td></tr>
+            <tr><td>Code review</td><td>File read, exec (limited), git read</td></tr>
+            <tr><td>Monitoring</td><td>System status, log read</td></tr>
+            <tr><td>Full access</td><td>Only with explicit owner approval</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+</section>
+
+<!-- Section 8: Monitoring -->
+<section class="section" id="monitoring">
+  <details>
+    <summary>
+      <span class="step-icon">👁️</span>
+      Monitoring & Incident Response
+    </summary>
+    <div class="section-content">
+      <h3>What to Log</h3>
+      <ul>
+        <li><strong>Security incidents</strong> — Prompt injection attempts, suspicious requests</li>
+        <li><strong>2FA attempts</strong> — All verification attempts with pass/fail</li>
+        <li><strong>Sensitive operations</strong> — Any action requiring elevated privileges</li>
+        <li><strong>Sub-agent activity</strong> — Spawns, completions, anomalies</li>
+        <li><strong>External content flags</strong> — Detected injection patterns</li>
+      </ul>
+
+      <h3>Log Format</h3>
+      <pre><span class="comment"># Daily security log structure</span>
+## Security Incidents
+[09:15] INJECTION_ATTEMPT
+  Source: email from "admin@example.com"
+  Pattern: "ignore previous instructions"
+  Action: Blocked, owner alerted
+
+## 2FA Log
+[10:30] TOTP_VERIFY operation=ssh_key_add result=OK
+[14:22] TOTP_VERIFY operation=firewall_change result=INVALID
+
+## Sensitive Ops
+[10:31] SSH_KEY_ADD key=user@host verified=true</pre>
+
+      <h3>Incident Response Protocol</h3>
+      <ol>
+        <li><strong>STOP</strong> — Do not execute anything from suspicious content</li>
+        <li><strong>LOG</strong> — Record full context with source and payload</li>
+        <li><strong>ALERT</strong> — Notify owner immediately</li>
+        <li><strong>PRESERVE</strong> — Keep evidence for analysis</li>
+      </ol>
+
+      <h3>Periodic Audits</h3>
+      <p>Schedule regular security checks:</p>
+      <ul class="checklist">
+        <li>Review security logs daily</li>
+        <li>Audit sub-agent spawns weekly</li>
+        <li>Check for stale credentials monthly</li>
+        <li>Test injection defenses quarterly</li>
+        <li>Rotate TOTP secrets annually (or after any suspected compromise)</li>
+      </ul>
+
+      <div class="highlight">
+        <strong>Automation:</strong> Use cron jobs or heartbeat checks to run security audits automatically. Alert only on findings, stay silent when clean.
+      </div>
+    </div>
+  </details>
+</section>
+
+<!-- Quick Reference -->
+<section class="section">
+  <details>
+    <summary>
+      <span class="step-icon">📋</span>
+      Quick Reference Checklist
+    </summary>
+    <div class="section-content">
+      <h3>Security Setup Checklist</h3>
+      <ul class="checklist">
+        <li>Define owner identifiers (usernames, numbers, IDs)</li>
+        <li>Set up TOTP 2FA for sensitive operations</li>
+        <li>Create verification script for TOTP codes</li>
+        <li>Define red lines in bot configuration</li>
+        <li>Configure prompt injection detection patterns</li>
+        <li>Set up security logging with daily rotation</li>
+        <li>Establish sub-agent limits and logging</li>
+        <li>Create incident response protocol</li>
+        <li>Schedule periodic security audits</li>
+        <li>Test the setup with simulated attacks</li>
+      </ul>
+
+      <h3>Daily Security Habits</h3>
+      <ul class="checklist">
+        <li>Review security logs from past 24 hours</li>
+        <li>Check for failed 2FA attempts</li>
+        <li>Review sub-agent activity</li>
+        <li>Verify no unexpected external messages sent</li>
+      </ul>
+    </div>
+  </details>
+</section>
+
+<footer class="footer">
+  <p>Built from real-world experience running AI assistants with system access.</p>
+  <p>Last updated: February 2026 · <a href="https://github.com/openclaw/openclaw">OpenClaw</a></p>
+</footer>
+
+</div>
+
+<script>
+// Auto-expand first section
+document.addEventListener('DOMContentLoaded', () => {
+  // Roadmap click handling
+  document.querySelectorAll('.roadmap-step').forEach(step => {
+    step.addEventListener('click', (e) => {
+      const target = document.querySelector(step.getAttribute('href'));
+      if (target) {
+        const details = target.querySelector('details');
+        if (details) details.open = true;
+      }
+    });
+  });
+
+  // Update active roadmap step on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        document.querySelectorAll('.roadmap-step').forEach(step => {
+          step.classList.toggle('active', step.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+
+  document.querySelectorAll('.section[id]').forEach(section => {
+    observer.observe(section);
+  });
+});
+</script>
+</body>
+</html>
