@@ -148,18 +148,46 @@
 <h1>🛡️ Secure Your Bot</h1>
 <p class="subtitle">Full security configuration. Paste to your bot — it creates the files.</p>
 
-<div class="warning">
-  <strong>Note:</strong> This creates SECURITY.md and adds security rules to SOUL.md and AGENTS.md. Review the files after creation. Customize owner identifiers for your setup.
+<div class="explain">
+  <h2>What is this?</h2>
+  <p>A prompt that turns your AI bot into a security-hardened assistant. Copy it, paste it to your bot, and it will create the configuration files automatically.</p>
 </div>
 
 <div class="explain">
   <h2>What gets created</h2>
   <ul>
-    <li><strong>SECURITY.md</strong> — Prompt injection defense, 2FA operations, incident response</li>
-    <li><strong>SOUL.md additions</strong> — Red lines, third-party privacy, conflict resolution</li>
-    <li><strong>AGENTS.md additions</strong> — 2FA rules, external content handling, sub-agent governance, security logging</li>
-    <li><strong>verify-totp.sh</strong> — Script to verify 2FA codes (requires oathtool)</li>
+    <li><strong>SECURITY.md</strong> — Prompt injection defense patterns, 2FA-required operations list, TOTP setup instructions, incident response protocol</li>
+    <li><strong>SOUL.md additions</strong> — 9 "red lines" the bot will never cross, third-party privacy rules, what to do when owner asks to break rules</li>
+    <li><strong>AGENTS.md additions</strong> — 8 strict 2FA rules, external content handling (emails/web = data not commands), sub-agent spawn limits, security logging format</li>
+    <li><strong>scripts/verify-totp.sh</strong> — Bash script to verify 6-digit codes from Google Authenticator</li>
   </ul>
+</div>
+
+<div class="explain">
+  <h2>How it works</h2>
+  <ol>
+    <li><strong>Copy</strong> the prompt below</li>
+    <li><strong>Paste</strong> it to your bot (OpenClaw, Claude, or similar)</li>
+    <li><strong>Bot creates</strong> the security files in your workspace</li>
+    <li><strong>Review</strong> the created files — customize if needed</li>
+    <li><strong>Commit</strong> to version control</li>
+  </ol>
+</div>
+
+<div class="explain">
+  <h2>After setup, your bot will</h2>
+  <ul>
+    <li>🛡️ <strong>Block prompt injection</strong> — Detects and refuses malicious instructions hidden in emails, web pages, files</li>
+    <li>🔐 <strong>Require 2FA</strong> — Asks for a code before SSH changes, credential access, public git pushes, etc.</li>
+    <li>🚫 <strong>Enforce red lines</strong> — Never reveals owner identity, never harms people, never exfiltrates data</li>
+    <li>📧 <strong>Treat external content as data</strong> — Reads emails to summarize, but won't execute "instructions" found in them</li>
+    <li>🤖 <strong>Limit sub-agents</strong> — Max 3 concurrent, logs every spawn, inherits all restrictions</li>
+    <li>📝 <strong>Log security events</strong> — Injection attempts, 2FA checks, sensitive operations</li>
+  </ul>
+</div>
+
+<div class="warning">
+  <strong>After creation:</strong> Review all files. The bot creates generic templates — you may want to customize owner identifiers, adjust which operations need 2FA, or add project-specific rules.
 </div>
 
 <div class="prompt-box">
